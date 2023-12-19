@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"fmt"
+	"github.com/go-chi/chi/v5"
 	"io"
 	"net/http"
 	"strconv"
-	"strings"
 )
 
 var shortURLList map[string]string
@@ -21,7 +21,8 @@ func ShortURLHandler(shortURLList map[string]string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
-			if val, ok := shortURLList[strings.Trim(r.RequestURI, "/")]; ok {
+			id := chi.URLParam(r, "id")
+			if val, ok := shortURLList[id]; ok {
 				w.Header().Set("Location", val)
 				w.WriteHeader(http.StatusTemporaryRedirect)
 			} else {
