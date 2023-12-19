@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
@@ -79,16 +80,19 @@ func TestShortURLHandler(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var request *http.Request
+			w := httptest.NewRecorder()
+			h := ShortURLHandler(tt.args.shortURLList)
 			if tt.req.method == http.MethodPost {
 				request = httptest.NewRequest(tt.req.method, tt.req.path, bytes.NewBufferString(tt.req.payload))
+				h.ServeHTTP(w, request)
 
 			} else {
 				request = httptest.NewRequest(tt.req.method, tt.req.path+tt.req.payload, nil)
+				r := chi.NewRouter()
+				r.Get("/{id}", ShortURLHandler(tt.args.shortURLList))
+				r.ServeHTTP(w, request)
 
 			}
-			w := httptest.NewRecorder()
-			h := ShortURLHandler(tt.args.shortURLList)
-			h.ServeHTTP(w, request)
 			res := w.Result()
 
 			if tt.req.method == http.MethodPost {
