@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"io"
@@ -9,6 +10,14 @@ import (
 )
 
 var shortURLList map[string]string
+
+type shortenBody struct {
+	URL string `json:"url"`
+}
+
+type shortenResult struct {
+	Result string `json:"result"`
+}
 
 func addShortURL(url []byte, shortURLList map[string]string) string {
 
@@ -39,6 +48,39 @@ func ShortURLHandler(shortURLList map[string]string) http.HandlerFunc {
 			w.WriteHeader(http.StatusCreated)
 			var link = "http://" + r.Host + "/" + addShortURL(payload, shortURLList)
 			w.Write([]byte(link))
+
+		}
+	}
+
+}
+
+func ShortenURLHandler(shortURLList map[string]string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			defer r.Body.Close()
+
+			payload, err := io.ReadAll(r.Body)
+			if err != nil {
+				fmt.Println(err)
+			}
+
+			value := shortenBody{}
+			if err := json.Unmarshal(payload, &value); err != nil {
+				panic(err)
+			}
+
+			var link = "http://" + r.Host + "/" + addShortURL([]byte(value.URL), shortURLList)
+			sr := shortenResult{Result: link}
+
+			//var resBody []byte
+			resBody, err := json.Marshal(sr)
+			if err != nil {
+				panic(err)
+			}
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(http.StatusCreated)
+			w.Write(resBody)
 
 		}
 	}

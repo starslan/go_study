@@ -10,22 +10,45 @@ import (
 	"testing"
 )
 
+type args struct {
+	shortURLList map[string]string
+}
+
+type want struct {
+	statusCode   int
+	responseBody string
+	contentType  string
+}
+
+type req struct {
+	method  string
+	payload string
+	path    string
+}
+
+type tests []struct {
+	name string
+	args args
+	want want
+	req  req
+}
+
 func TestShortURLHandler(t *testing.T) {
-	type args struct {
-		shortURLList map[string]string
-	}
-
-	type want struct {
-		statusCode   int
-		responseBody string
-		contentType  string
-	}
-
-	type req struct {
-		method  string
-		payload string
-		path    string
-	}
+	//type args struct {
+	//	shortURLList map[string]string
+	//}
+	//
+	//type want struct {
+	//	statusCode   int
+	//	responseBody string
+	//	contentType  string
+	//}
+	//
+	//type req struct {
+	//	method  string
+	//	payload string
+	//	path    string
+	//}
 
 	tests := []struct {
 		name string
@@ -108,4 +131,59 @@ func TestShortURLHandler(t *testing.T) {
 			assert.Equalf(t, res.StatusCode, tt.want.statusCode, "The wait statusCode  %d  not equal got %d !", res.StatusCode, tt.want.statusCode)
 		})
 	}
+}
+
+func TestShortenURLHandler(t *testing.T) {
+
+	tests := tests{
+		{
+			name: "Test shorten POST '/' #1.",
+			args: args{shortURLList: map[string]string{}},
+			want: want{
+				statusCode:   http.StatusCreated,
+				responseBody: "{\"result\":\"http://example.com/1\"}",
+				contentType:  "pplication/json",
+			},
+			req: req{
+				method:  http.MethodPost,
+				path:    "/api/shorten",
+				payload: "{\"url\":\"http://ya.ru\"}",
+			},
+		},
+		{
+			name: "Test shorten POST '/' #2.",
+			args: args{shortURLList: map[string]string{"1": "https://google.com"}},
+			want: want{
+				statusCode:   http.StatusCreated,
+				responseBody: "{\"result\":\"http://example.com/2\"}",
+				contentType:  "pplication/json",
+			},
+			req: req{
+				method:  http.MethodPost,
+				path:    "/api/shorten",
+				payload: "{\"url\":\"http://ya.ru\"}",
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var request *http.Request
+			w := httptest.NewRecorder()
+			h := ShortenURLHandler(tt.args.shortURLList)
+
+			request = httptest.NewRequest(tt.req.method, tt.req.path, bytes.NewBufferString(tt.req.payload))
+			h.ServeHTTP(w, request)
+			res := w.Result()
+
+			var resultBuf bytes.Buffer
+			defer res.Body.Close()
+			if _, err := io.Copy(&resultBuf, res.Body); err != nil {
+				panic(err)
+			}
+
+			assert.Equalf(t, resultBuf.String(), tt.want.responseBody, "The wait result  %s  not equal got %s !", tt.want.responseBody, resultBuf.String())
+		})
+	}
+
 }
