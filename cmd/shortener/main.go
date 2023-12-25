@@ -26,5 +26,5 @@ func main() {
 		r.Post("/api/shorten", handlers.ShortenURLHandler(shortURLList, cfg))
 	})
 
-	log.Fatal(http.ListenAndServe(":8080", r))
+	log.Fatal(http.ListenAndServe(":"+cfg.ServerAddress, r))
 }
