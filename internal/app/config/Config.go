@@ -2,7 +2,6 @@ package config
 
 import (
 	"github.com/caarlos0/env/v10"
-	"log"
 )
 
 type Config struct {
@@ -15,7 +14,7 @@ var cfg Config
 func AppConfig() Config {
 	err := env.Parse(&cfg)
 	if err != nil {
-		log.Fatal(err)
+		cfg = Config{ServerAddress: "8080", BaseURL: "http://localhost"}
 	}
 	return cfg
 }
