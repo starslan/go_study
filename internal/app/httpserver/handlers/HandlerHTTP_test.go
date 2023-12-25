@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/assert"
+	"go_study/internal/app/config"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -31,6 +32,10 @@ type tests []struct {
 	args args
 	want want
 	req  req
+}
+
+func cfg() config.Config {
+	return config.AppConfig()
 }
 
 func TestShortURLHandler(t *testing.T) {
@@ -62,7 +67,7 @@ func TestShortURLHandler(t *testing.T) {
 			args: args{shortURLList: map[string]string{}},
 			want: want{
 				statusCode:   http.StatusCreated,
-				responseBody: "http://example.com/1",
+				responseBody: cfg().BaseURL + ":" + cfg().ServerAddress + "/1",
 				contentType:  "text/plain",
 			},
 			req: req{
@@ -76,7 +81,7 @@ func TestShortURLHandler(t *testing.T) {
 			args: args{shortURLList: map[string]string{"1": "https://google.com"}},
 			want: want{
 				statusCode:   http.StatusCreated,
-				responseBody: "http://example.com/2",
+				responseBody: cfg().BaseURL + ":" + cfg().ServerAddress + "/2",
 				contentType:  "text/plain",
 			},
 			req: req{
@@ -90,7 +95,7 @@ func TestShortURLHandler(t *testing.T) {
 			args: args{shortURLList: map[string]string{"1": "https://google.com"}},
 			want: want{
 				statusCode:   http.StatusTemporaryRedirect,
-				responseBody: "http://example.com/1",
+				responseBody: cfg().BaseURL + ":" + cfg().ServerAddress + "/1",
 				contentType:  "text/plain",
 			},
 			req: req{
@@ -104,7 +109,7 @@ func TestShortURLHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var request *http.Request
 			w := httptest.NewRecorder()
-			h := ShortURLHandler(tt.args.shortURLList)
+			h := ShortURLHandler(tt.args.shortURLList, cfg())
 			if tt.req.method == http.MethodPost {
 				request = httptest.NewRequest(tt.req.method, tt.req.path, bytes.NewBufferString(tt.req.payload))
 				h.ServeHTTP(w, request)
@@ -112,7 +117,7 @@ func TestShortURLHandler(t *testing.T) {
 			} else {
 				request = httptest.NewRequest(tt.req.method, tt.req.path+tt.req.payload, nil)
 				r := chi.NewRouter()
-				r.Get("/{id}", ShortURLHandler(tt.args.shortURLList))
+				r.Get("/{id}", ShortURLHandler(tt.args.shortURLList, cfg()))
 				r.ServeHTTP(w, request)
 
 			}
@@ -141,7 +146,7 @@ func TestShortenURLHandler(t *testing.T) {
 			args: args{shortURLList: map[string]string{}},
 			want: want{
 				statusCode:   http.StatusCreated,
-				responseBody: "{\"result\":\"http://example.com/1\"}",
+				responseBody: "{\"result\":\"" + cfg().BaseURL + ":" + cfg().ServerAddress + "/1\"}",
 				contentType:  "pplication/json",
 			},
 			req: req{
@@ -155,7 +160,7 @@ func TestShortenURLHandler(t *testing.T) {
 			args: args{shortURLList: map[string]string{"1": "https://google.com"}},
 			want: want{
 				statusCode:   http.StatusCreated,
-				responseBody: "{\"result\":\"http://example.com/2\"}",
+				responseBody: "{\"result\":\"" + cfg().BaseURL + ":" + cfg().ServerAddress + "/2\"}",
 				contentType:  "pplication/json",
 			},
 			req: req{
@@ -170,7 +175,7 @@ func TestShortenURLHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var request *http.Request
 			w := httptest.NewRecorder()
-			h := ShortenURLHandler(tt.args.shortURLList)
+			h := ShortenURLHandler(tt.args.shortURLList, cfg())
 
 			request = httptest.NewRequest(tt.req.method, tt.req.path, bytes.NewBufferString(tt.req.payload))
 			h.ServeHTTP(w, request)
