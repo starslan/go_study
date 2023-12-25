@@ -5,6 +5,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"go_study/internal/app/config"
 	"go_study/internal/app/httpserver/handlers"
+	"log"
 	"net/http"
 )
 
@@ -25,9 +26,5 @@ func main() {
 		r.Post("/api/shorten", handlers.ShortenURLHandler(shortURLList, cfg))
 	})
 
-	err := http.ListenAndServe(":"+cfg.ServerAddress, r)
-	if err != nil {
-		return
-	}
-
+	log.Fatal(http.ListenAndServe(":8080", r))
 }
