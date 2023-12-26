@@ -67,7 +67,7 @@ func TestShortURLHandler(t *testing.T) {
 			args: args{shortURLList: map[string]string{}},
 			want: want{
 				statusCode:   http.StatusCreated,
-				responseBody: cfg().BaseURL + ":" + cfg().ServerAddress + "/1",
+				responseBody: cfg().BaseURL + "/1",
 				contentType:  "text/plain",
 			},
 			req: req{
@@ -81,7 +81,7 @@ func TestShortURLHandler(t *testing.T) {
 			args: args{shortURLList: map[string]string{"1": "https://google.com"}},
 			want: want{
 				statusCode:   http.StatusCreated,
-				responseBody: cfg().BaseURL + ":" + cfg().ServerAddress + "/2",
+				responseBody: cfg().BaseURL + "/2",
 				contentType:  "text/plain",
 			},
 			req: req{
@@ -95,7 +95,7 @@ func TestShortURLHandler(t *testing.T) {
 			args: args{shortURLList: map[string]string{"1": "https://google.com"}},
 			want: want{
 				statusCode:   http.StatusTemporaryRedirect,
-				responseBody: cfg().BaseURL + ":" + cfg().ServerAddress + "/1",
+				responseBody: cfg().BaseURL + "/1",
 				contentType:  "text/plain",
 			},
 			req: req{
@@ -146,7 +146,7 @@ func TestShortenURLHandler(t *testing.T) {
 			args: args{shortURLList: map[string]string{}},
 			want: want{
 				statusCode:   http.StatusCreated,
-				responseBody: "{\"result\":\"" + cfg().BaseURL + ":" + cfg().ServerAddress + "/1\"}",
+				responseBody: "{\"result\":\"" + cfg().BaseURL + "/1\"}",
 				contentType:  "pplication/json",
 			},
 			req: req{
@@ -160,7 +160,7 @@ func TestShortenURLHandler(t *testing.T) {
 			args: args{shortURLList: map[string]string{"1": "https://google.com"}},
 			want: want{
 				statusCode:   http.StatusCreated,
-				responseBody: "{\"result\":\"" + cfg().BaseURL + ":" + cfg().ServerAddress + "/2\"}",
+				responseBody: "{\"result\":\"" + cfg().BaseURL + "/2\"}",
 				contentType:  "pplication/json",
 			},
 			req: req{
