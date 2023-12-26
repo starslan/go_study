@@ -1,6 +1,9 @@
 package config
 
-import "github.com/caarlos0/env/v10"
+import (
+	"github.com/caarlos0/env/v10"
+	"log"
+)
 
 type Config struct {
 	ServerAddress string `env:"SERVER_ADDRESS"`
@@ -10,9 +13,10 @@ type Config struct {
 var cfg Config
 
 func AppConfig() Config {
+	cfg = Config{ServerAddress: "8080", BaseURL: "http://localhost"}
 	err := env.Parse(&cfg)
 	if err != nil {
-		cfg = Config{ServerAddress: "8080", BaseURL: "http://localhost"}
+		log.Fatal(err)
 	}
 	return cfg
 }
