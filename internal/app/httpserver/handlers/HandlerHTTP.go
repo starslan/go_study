@@ -58,7 +58,7 @@ func ShortURLHandler(shortURLList map[string]string, cfg config.Config) http.Han
 			w.WriteHeader(http.StatusCreated)
 			fmt.Println(cfg)
 			log.Println(cfg)
-			var link = cfg.BaseURL + ":::" + cfg.ServerAddress + "/" + addShortURL(payload, shortURLList)
+			var link = cfg.BaseURL + ":" + cfg.ServerAddress + "/" + addShortURL(payload, shortURLList)
 			w.Write([]byte(link))
 
 		}
