@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/go-chi/chi/v5"
+	"go_study/internal/app/config"
 	"io"
 	"net/http"
 	"strconv"
@@ -26,7 +27,15 @@ func addShortURL(url []byte, shortURLList map[string]string) string {
 	return key
 }
 
-func ShortURLHandler(shortURLList map[string]string) http.HandlerFunc {
+//type MyHandler struct {
+//	cfg config.Config
+//}
+//
+//func NewMyHandler(cfg config.Config) *MyHandler {
+//	return &MyHandler{cfg: cfg}
+//}
+
+func ShortURLHandler(shortURLList map[string]string, cfg config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
@@ -46,7 +55,7 @@ func ShortURLHandler(shortURLList map[string]string) http.HandlerFunc {
 			}
 
 			w.WriteHeader(http.StatusCreated)
-			var link = "http://" + r.Host + "/" + addShortURL(payload, shortURLList)
+			var link = cfg.BaseURL + "/" + addShortURL(payload, shortURLList)
 			w.Write([]byte(link))
 
 		}
@@ -54,7 +63,7 @@ func ShortURLHandler(shortURLList map[string]string) http.HandlerFunc {
 
 }
 
-func ShortenURLHandler(shortURLList map[string]string) http.HandlerFunc {
+func ShortenURLHandler(shortURLList map[string]string, cfg config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
@@ -70,7 +79,7 @@ func ShortenURLHandler(shortURLList map[string]string) http.HandlerFunc {
 				panic(err)
 			}
 
-			var link = "http://" + r.Host + "/" + addShortURL([]byte(value.URL), shortURLList)
+			var link = cfg.BaseURL + "/" + addShortURL([]byte(value.URL), shortURLList)
 			sr := shortenResult{Result: link}
 
 			//var resBody []byte
