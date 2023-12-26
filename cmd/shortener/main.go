@@ -26,6 +26,8 @@ func main() {
 		r.Post("/api/shorten", handlers.ShortenURLHandler(shortURLList, cfg))
 	})
 
-	panic(cfg.ServerAddress + " " + cfg.BaseURL)
+	if cfg.ServerAddress != "8080" {
+		panic(cfg.ServerAddress + " " + cfg.BaseURL)
+	}
 	log.Fatal(http.ListenAndServe(":"+cfg.ServerAddress, r))
 }
