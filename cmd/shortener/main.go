@@ -26,5 +26,6 @@ func main() {
 		r.Post("/api/shorten", handlers.ShortenURLHandler(shortURLList, cfg))
 	})
 
+	panic(cfg)
 	log.Fatal(http.ListenAndServe(":"+cfg.ServerAddress, r))
 }
