@@ -35,7 +35,7 @@ type tests []struct {
 }
 
 func cfg() config.Config {
-	return config.AppConfig()
+	return config.NewConfig()
 }
 
 func TestShortURLHandler(t *testing.T) {

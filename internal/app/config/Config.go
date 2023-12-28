@@ -8,9 +8,10 @@ import (
 type Config struct {
 	ServerAddress string `env:"SERVER_ADDRESS" envDefault:"localhost:8080"`
 	BaseURL       string `env:"BASE_URL" envDefault:"http://localhost:8080"`
+	FilePath      string `env:"FILE_STORAGE_PATH"`
 }
 
-func AppConfig() Config {
+func NewConfig() Config {
 	var cfg = Config{}
 	err := env.Parse(&cfg)
 	if err != nil {
