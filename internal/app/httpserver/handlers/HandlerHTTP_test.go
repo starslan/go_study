@@ -34,26 +34,8 @@ type tests []struct {
 	req  req
 }
 
-func cfg() config.Config {
-	return config.AppConfig()
-}
-
 func TestShortURLHandler(t *testing.T) {
-	//type args struct {
-	//	shortURLList map[string]string
-	//}
-	//
-	//type want struct {
-	//	statusCode   int
-	//	responseBody string
-	//	contentType  string
-	//}
-	//
-	//type req struct {
-	//	method  string
-	//	payload string
-	//	path    string
-	//}
+	сfg := config.NewConfig()
 
 	tests := []struct {
 		name string
@@ -67,7 +49,7 @@ func TestShortURLHandler(t *testing.T) {
 			args: args{shortURLList: map[string]string{}},
 			want: want{
 				statusCode:   http.StatusCreated,
-				responseBody: cfg().BaseURL + "/1",
+				responseBody: сfg.BaseURL + "/1",
 				contentType:  "text/plain",
 			},
 			req: req{
@@ -81,7 +63,7 @@ func TestShortURLHandler(t *testing.T) {
 			args: args{shortURLList: map[string]string{"1": "https://google.com"}},
 			want: want{
 				statusCode:   http.StatusCreated,
-				responseBody: cfg().BaseURL + "/2",
+				responseBody: сfg.BaseURL + "/2",
 				contentType:  "text/plain",
 			},
 			req: req{
@@ -95,7 +77,7 @@ func TestShortURLHandler(t *testing.T) {
 			args: args{shortURLList: map[string]string{"1": "https://google.com"}},
 			want: want{
 				statusCode:   http.StatusTemporaryRedirect,
-				responseBody: cfg().BaseURL + "/1",
+				responseBody: сfg.BaseURL + "/1",
 				contentType:  "text/plain",
 			},
 			req: req{
@@ -107,9 +89,10 @@ func TestShortURLHandler(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			сfg := config.NewConfig()
 			var request *http.Request
 			w := httptest.NewRecorder()
-			h := ShortURLHandler(tt.args.shortURLList, cfg())
+			h := ShortURLHandler(tt.args.shortURLList, сfg)
 			if tt.req.method == http.MethodPost {
 				request = httptest.NewRequest(tt.req.method, tt.req.path, bytes.NewBufferString(tt.req.payload))
 				h.ServeHTTP(w, request)
@@ -117,7 +100,7 @@ func TestShortURLHandler(t *testing.T) {
 			} else {
 				request = httptest.NewRequest(tt.req.method, tt.req.path+tt.req.payload, nil)
 				r := chi.NewRouter()
-				r.Get("/{id}", ShortURLHandler(tt.args.shortURLList, cfg()))
+				r.Get("/{id}", h)
 				r.ServeHTTP(w, request)
 
 			}
@@ -139,14 +122,14 @@ func TestShortURLHandler(t *testing.T) {
 }
 
 func TestShortenURLHandler(t *testing.T) {
-
+	cfg := config.NewConfig()
 	tests := tests{
 		{
 			name: "Test shorten POST '/' #1.",
 			args: args{shortURLList: map[string]string{}},
 			want: want{
 				statusCode:   http.StatusCreated,
-				responseBody: "{\"result\":\"" + cfg().BaseURL + "/1\"}",
+				responseBody: "{\"result\":\"" + cfg.BaseURL + "/1\"}",
 				contentType:  "pplication/json",
 			},
 			req: req{
@@ -160,7 +143,7 @@ func TestShortenURLHandler(t *testing.T) {
 			args: args{shortURLList: map[string]string{"1": "https://google.com"}},
 			want: want{
 				statusCode:   http.StatusCreated,
-				responseBody: "{\"result\":\"" + cfg().BaseURL + "/2\"}",
+				responseBody: "{\"result\":\"" + cfg.BaseURL + "/2\"}",
 				contentType:  "pplication/json",
 			},
 			req: req{
@@ -175,7 +158,7 @@ func TestShortenURLHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			var request *http.Request
 			w := httptest.NewRecorder()
-			h := ShortenURLHandler(tt.args.shortURLList, cfg())
+			h := ShortenURLHandler(tt.args.shortURLList, cfg)
 
 			request = httptest.NewRequest(tt.req.method, tt.req.path, bytes.NewBufferString(tt.req.payload))
 			h.ServeHTTP(w, request)

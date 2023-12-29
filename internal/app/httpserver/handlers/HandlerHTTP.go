@@ -5,12 +5,15 @@ import (
 	"fmt"
 	"github.com/go-chi/chi/v5"
 	"go_study/internal/app/config"
+	"go_study/internal/app/file"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 )
 
 var shortURLList map[string]string
+var cfg config.Config
 
 type shortenBody struct {
 	URL string `json:"url"`
@@ -23,6 +26,18 @@ type shortenResult struct {
 func addShortURL(url []byte, shortURLList map[string]string) string {
 
 	var key = strconv.Itoa(len(shortURLList) + 1)
+	event := file.Event{ID: key, URL: string(url)}
+	if cfg.FilePath != "" {
+
+		cons, err := file.NewProducer(cfg.FilePath)
+		if err != nil {
+			log.Println(err)
+		}
+		err = cons.WriteEvent(&event)
+		if err != nil {
+			log.Println(err)
+		}
+	}
 	shortURLList[key] = string(url)
 	return key
 }
@@ -35,7 +50,8 @@ func addShortURL(url []byte, shortURLList map[string]string) string {
 //	return &MyHandler{cfg: cfg}
 //}
 
-func ShortURLHandler(shortURLList map[string]string, cfg config.Config) http.HandlerFunc {
+func ShortURLHandler(shortURLList map[string]string, config config.Config) http.HandlerFunc {
+	cfg = config
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodGet:
@@ -63,7 +79,8 @@ func ShortURLHandler(shortURLList map[string]string, cfg config.Config) http.Han
 
 }
 
-func ShortenURLHandler(shortURLList map[string]string, cfg config.Config) http.HandlerFunc {
+func ShortenURLHandler(shortURLList map[string]string, config config.Config) http.HandlerFunc {
+	cfg = config
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
