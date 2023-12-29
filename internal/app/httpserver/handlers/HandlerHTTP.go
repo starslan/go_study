@@ -27,13 +27,16 @@ func addShortURL(url []byte, shortURLList map[string]string) string {
 
 	var key = strconv.Itoa(len(shortURLList) + 1)
 	event := file.Event{ID: key, URL: string(url)}
-	cons, err := file.NewProducer(cfg.FilePath)
-	if err != nil {
-		log.Println(err)
-	}
-	err = cons.WriteEvent(&event)
-	if err != nil {
-		log.Println(err)
+	if cfg.FilePath != "" {
+
+		cons, err := file.NewProducer(cfg.FilePath)
+		if err != nil {
+			log.Println(err)
+		}
+		err = cons.WriteEvent(&event)
+		if err != nil {
+			log.Println(err)
+		}
 	}
 	shortURLList[key] = string(url)
 	return key
