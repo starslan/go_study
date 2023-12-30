@@ -122,7 +122,7 @@ func TestShortURLHandler(t *testing.T) {
 }
 
 func TestShortenURLHandler(t *testing.T) {
-	cfg := config.NewConfig()
+	//cfg := config.NewConfig()
 	tests := tests{
 		{
 			name: "Test shorten POST '/' #1.",
