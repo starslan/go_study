@@ -89,7 +89,7 @@ func TestShortURLHandler(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			сfg := config.NewConfig()
+			//сfg := config.NewConfig()
 			var request *http.Request
 			w := httptest.NewRecorder()
 			h := ShortURLHandler(tt.args.shortURLList, сfg)
@@ -122,7 +122,7 @@ func TestShortURLHandler(t *testing.T) {
 }
 
 func TestShortenURLHandler(t *testing.T) {
-	cfg := config.NewConfig()
+	//cfg := config.NewConfig()
 	tests := tests{
 		{
 			name: "Test shorten POST '/' #1.",
