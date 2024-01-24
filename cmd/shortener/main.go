@@ -6,6 +6,7 @@ import (
 	"go_study/internal/app/config"
 	"go_study/internal/app/file"
 	"go_study/internal/app/httpserver/handlers"
+	middlewareCustom "go_study/internal/app/httpserver/middleware"
 	"log"
 	"net/http"
 )
@@ -26,9 +27,9 @@ func main() {
 	r.Use(middleware.Recoverer)
 
 	r.Route("/", func(r chi.Router) {
-		r.Post("/", handlers.ShortURLHandler(shortURLList, cfg))
+		r.Post("/", middlewareCustom.GzipMiddleware(handlers.ShortURLHandler(shortURLList, cfg)))
 		r.Get("/{id}", handlers.ShortURLHandler(shortURLList, cfg))
-		r.Post("/api/shorten", handlers.ShortenURLHandler(shortURLList, cfg))
+		r.Post("/api/shorten", middlewareCustom.GzipMiddleware(handlers.ShortenURLHandler(shortURLList, cfg)))
 	})
 
 	log.Fatal(http.ListenAndServe(cfg.ServerAddress, r))

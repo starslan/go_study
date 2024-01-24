@@ -2,11 +2,10 @@ package handlers
 
 import (
 	"encoding/json"
-	"fmt"
 	"github.com/go-chi/chi/v5"
 	"go_study/internal/app/config"
 	"go_study/internal/app/file"
-	"io"
+	"go_study/internal/app/httpserver/middleware"
 	"log"
 	"net/http"
 	"strconv"
@@ -64,11 +63,8 @@ func ShortURLHandler(shortURLList map[string]string, config config.Config) http.
 			}
 
 		case http.MethodPost:
-			defer r.Body.Close()
-			payload, err := io.ReadAll(r.Body)
-			if err != nil {
-				fmt.Println(err)
-			}
+
+			payload := middleware.GetPayloadRequest(w, r)
 
 			w.WriteHeader(http.StatusCreated)
 			var link = cfg.BaseURL + "/" + addShortURL(payload, shortURLList)
@@ -84,12 +80,8 @@ func ShortenURLHandler(shortURLList map[string]string, config config.Config) htt
 	return func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
-			defer r.Body.Close()
 
-			payload, err := io.ReadAll(r.Body)
-			if err != nil {
-				fmt.Println(err)
-			}
+			payload := middleware.GetPayloadRequest(w, r)
 
 			value := shortenBody{}
 			if err := json.Unmarshal(payload, &value); err != nil {
