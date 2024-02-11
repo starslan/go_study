@@ -30,11 +30,11 @@ func NewConsumer(filename string) (*consumer, error) {
 }
 
 func (c *consumer) ReadEvent() (*Event, error) {
-	// одиночное сканирование до следующей строки
+
 	if !c.scanner.Scan() {
 		return nil, c.scanner.Err()
 	}
-	// читаем данные из scanner
+
 	data := c.scanner.Bytes()
 
 	event := Event{}

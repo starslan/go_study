@@ -14,7 +14,7 @@ import (
 func main() {
 
 	cfg := config.NewConfig()
-	shortURLList := make(map[string]string)
+	shortURLList := make(map[string]handlers.URLUserItem)
 	if cfg.FilePath != "" {
 
 		fillList(shortURLList, "shortURLList")
@@ -25,6 +25,7 @@ func main() {
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
+	r.Use(middlewareCustom.CheckUserIdMiddleware(shortURLList))
 
 	r.Route("/", func(r chi.Router) {
 		r.Post("/", middlewareCustom.GzipMiddleware(handlers.ShortURLHandler(shortURLList, cfg)))
@@ -35,7 +36,7 @@ func main() {
 	log.Fatal(http.ListenAndServe(cfg.ServerAddress, r))
 }
 
-func fillList(shortURLList map[string]string, path string) {
+func fillList(shortURLList map[string]handlers.URLUserItem, path string) {
 
 	cons, err := file.NewConsumer(path)
 	if err != nil {
@@ -47,6 +48,6 @@ func fillList(shortURLList map[string]string, path string) {
 		if err != nil || event == nil {
 			break
 		}
-		shortURLList[event.ID] = event.URL
+		shortURLList[event.ID] = handlers.URLUserItem(event.Data)
 	}
 }

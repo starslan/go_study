@@ -11,8 +11,13 @@ import (
 	"strconv"
 )
 
-var shortURLList map[string]string
+var shortURLList map[string]URLUserItem
 var cfg config.Config
+
+type URLUserItem struct {
+	URL    string `json:"url"`
+	UserId uint32 `json:"user-id"`
+}
 
 type shortenBody struct {
 	URL string `json:"url"`
@@ -22,10 +27,11 @@ type shortenResult struct {
 	Result string `json:"result"`
 }
 
-func addShortURL(url []byte, shortURLList map[string]string) string {
+func addShortURL(url []byte, shortURLList map[string]URLUserItem, userId uint32) string {
 
 	var key = strconv.Itoa(len(shortURLList) + 1)
-	event := file.Event{ID: key, URL: string(url)}
+	//event := file.Event{ID: key, URL: string(url)}
+	event := file.Event{ID: key, Data: file.URLUserItem(URLUserItem{string(url), userId})}
 	if cfg.FilePath != "" {
 
 		cons, err := file.NewProducer(cfg.FilePath)
@@ -37,26 +43,29 @@ func addShortURL(url []byte, shortURLList map[string]string) string {
 			log.Println(err)
 		}
 	}
-	shortURLList[key] = string(url)
+	shortURLList[key] = URLUserItem{string(url), 1}
 	return key
 }
 
-//type MyHandler struct {
-//	cfg config.Config
-//}
-//
-//func NewMyHandler(cfg config.Config) *MyHandler {
-//	return &MyHandler{cfg: cfg}
-//}
+func getUserId(r *http.Request) uint32 {
+	userId, err := strconv.ParseUint(r.Header.Get("X-USER-ID"), 10, 32)
+	if err != nil {
+		panic(err)
+	}
+	return uint32(userId)
+}
 
-func ShortURLHandler(shortURLList map[string]string, config config.Config) http.HandlerFunc {
+func ShortURLHandler(shortURLList map[string]URLUserItem, config config.Config) http.HandlerFunc {
 	cfg = config
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		userId := getUserId(r)
+
 		switch r.Method {
 		case http.MethodGet:
 			id := chi.URLParam(r, "id")
 			if val, ok := shortURLList[id]; ok {
-				w.Header().Set("Location", val)
+				w.Header().Set("Location", val.URL)
 				w.WriteHeader(http.StatusTemporaryRedirect)
 			} else {
 				w.WriteHeader(http.StatusBadRequest)
@@ -67,7 +76,7 @@ func ShortURLHandler(shortURLList map[string]string, config config.Config) http.
 			payload := middleware.GetPayloadRequest(w, r)
 
 			w.WriteHeader(http.StatusCreated)
-			var link = cfg.BaseURL + "/" + addShortURL(payload, shortURLList)
+			var link = cfg.BaseURL + "/" + addShortURL(payload, shortURLList, userId)
 			w.Write([]byte(link))
 
 		}
@@ -75,9 +84,10 @@ func ShortURLHandler(shortURLList map[string]string, config config.Config) http.
 
 }
 
-func ShortenURLHandler(shortURLList map[string]string, config config.Config) http.HandlerFunc {
+func ShortenURLHandler(shortURLList map[string]URLUserItem, config config.Config) http.HandlerFunc {
 	cfg = config
 	return func(w http.ResponseWriter, r *http.Request) {
+		userId := getUserId(r)
 		switch r.Method {
 		case http.MethodPost:
 
@@ -88,7 +98,7 @@ func ShortenURLHandler(shortURLList map[string]string, config config.Config) htt
 				panic(err)
 			}
 
-			var link = cfg.BaseURL + "/" + addShortURL([]byte(value.URL), shortURLList)
+			var link = cfg.BaseURL + "/" + addShortURL([]byte(value.URL), shortURLList, userId)
 			sr := shortenResult{Result: link}
 
 			//var resBody []byte
